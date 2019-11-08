@@ -8,14 +8,19 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class BreakoutGameClass extends ApplicationAdapter {
+	public static String TITLE = "Breakout VERSION 0.0.1";
+
 	SpriteBatch batch;
 	Texture ball;
 	Texture pad;
 	Texture tile;
 	BitmapFont score;
-	
+
 	@Override
 	public void create () {
+		// LOG
+		Gdx.app.log(TITLE, "create()");
+
 		batch = new SpriteBatch();
 		ball = new Texture("blueball.png");
 		pad = new Texture("brownpad.png");
@@ -24,7 +29,22 @@ public class BreakoutGameClass extends ApplicationAdapter {
 	}
 
 	@Override
+	public void dispose () {
+		// LOG
+		Gdx.app.log(TITLE, "dispose()");
+
+		batch.dispose();
+		ball.dispose();
+		pad.dispose();
+		tile.dispose();
+		score.dispose();
+	}
+
+	@Override
 	public void render () {
+		// LOG
+		Gdx.app.log(TITLE, "render()");
+
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
@@ -41,10 +61,22 @@ public class BreakoutGameClass extends ApplicationAdapter {
 		}
 		batch.end();
 	}
-	
+
 	@Override
-	public void dispose () {
-		batch.dispose();
-//		img.dispose();
+	public void resize(int width, int height) {
+		// LOG
+		Gdx.app.log(TITLE, "resize(..)");
+	}
+
+	@Override
+	public void pause() {
+		// LOG
+		Gdx.app.log(TITLE, "pause()");
+	}
+
+	@Override
+	public void resume() {
+		// LOG
+		Gdx.app.log(TITLE, "resume()");
 	}
 }
