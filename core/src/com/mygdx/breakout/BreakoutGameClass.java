@@ -1,82 +1,90 @@
 package com.mygdx.breakout;
 
-import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.breakout.screens.Splash;
 
-public class BreakoutGameClass extends ApplicationAdapter {
-	public static String TITLE = "Breakout VERSION 0.0.1";
+public class BreakoutGameClass extends Game {
+    public static String TITLE = "Breakout VERSION 0.0.1";
 
-	SpriteBatch batch;
-	Texture ball;
-	Texture pad;
-	Texture tile;
-	BitmapFont score;
+    SpriteBatch batch;
+    Texture ball;
+    Texture pad;
+    Texture tile;
+    BitmapFont score;
 
-	@Override
-	public void create () {
-		// LOG
-		Gdx.app.log(TITLE, "create()");
+    @Override
+    public void create() {
+        // LOG
+        Gdx.app.log(TITLE, "create()");
 
-		batch = new SpriteBatch();
-		ball = new Texture("blueball.png");
-		pad = new Texture("brownpad.png");
-		tile = new Texture("greentile.png");
-		score = new BitmapFont();
-	}
+        setScreen(new Splash());
 
-	@Override
-	public void dispose () {
-		// LOG
-		Gdx.app.log(TITLE, "dispose()");
+//        batch = new SpriteBatch();
+//        ball = new Texture("blueball.png");
+//        pad = new Texture("brownpad.png");
+//        tile = new Texture("greentile.png");
+//        score = new BitmapFont();
+    }
 
-		batch.dispose();
-		ball.dispose();
-		pad.dispose();
-		tile.dispose();
-		score.dispose();
-	}
+    @Override
+    public void dispose() {
+        // LOG
+        Gdx.app.log(TITLE, "dispose()");
+        super.dispose();
 
-	@Override
-	public void render () {
-		// LOG
-		Gdx.app.log(TITLE, "render()");
+//        batch.dispose();
+//        ball.dispose();
+//        pad.dispose();
+//        tile.dispose();
+//        score.dispose();
+    }
 
-		Gdx.gl.glClearColor(0, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		batch.begin();
+    @Override
+    public void render() {
+        // LOG
+        Gdx.app.log(TITLE, "render()");
+        super.render();
 
-		score.draw(batch, "Score = 0", 30, 460);
+//        Gdx.gl.glClearColor(0, 0, 0, 1);
+//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+//        batch.begin();
+//
+//        score.draw(batch, "Score = 0", 30, 460);
+//
+//        batch.draw(pad, 300, 10, 65, 10);
+//        batch.draw(ball, 315, 20, 15, 15);
+//
+//        for (int y = 420; y > 200; y -= 20) {
+//            for (int x = 30; x < 570; x += 65) {
+//                batch.draw(tile, x, y, 60, 15);
+//            }
+//        }
+//        batch.end();
+    }
 
-		batch.draw(pad, 300, 10, 65, 10);
-		batch.draw(ball, 315, 20, 15, 15);
+    @Override
+    public void resize(int width, int height) {
+        // LOG
+        Gdx.app.log(TITLE, "resize(..)");
+        super.resize(width, height);
+    }
 
-		for (int y = 420; y > 200; y-= 20) {
-			for (int x = 30; x < 570; x += 65) {
-				batch.draw(tile, x, y, 60, 15);
-			}
-		}
-		batch.end();
-	}
+    @Override
+    public void pause() {
+        // LOG
+        Gdx.app.log(TITLE, "pause()");
+        super.pause();
+    }
 
-	@Override
-	public void resize(int width, int height) {
-		// LOG
-		Gdx.app.log(TITLE, "resize(..)");
-	}
-
-	@Override
-	public void pause() {
-		// LOG
-		Gdx.app.log(TITLE, "pause()");
-	}
-
-	@Override
-	public void resume() {
-		// LOG
-		Gdx.app.log(TITLE, "resume()");
-	}
+    @Override
+    public void resume() {
+        // LOG
+        Gdx.app.log(TITLE, "resume()");
+        super.resume();
+    }
 }
