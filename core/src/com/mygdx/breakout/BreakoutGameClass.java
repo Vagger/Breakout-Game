@@ -9,7 +9,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mygdx.breakout.screens.Splash;
 
 public class BreakoutGameClass extends Game {
-    public static String TITLE = "Breakout VERSION 0.0.1";
+    public static String TITLE = "Breakout";
+    public static String VERSION = "0.0.1";
 
     SpriteBatch batch;
     Texture ball;
@@ -19,9 +20,6 @@ public class BreakoutGameClass extends Game {
 
     @Override
     public void create() {
-        // LOG
-        Gdx.app.log(TITLE, "create()");
-
         setScreen(new Splash());
 
 //        batch = new SpriteBatch();
@@ -33,8 +31,6 @@ public class BreakoutGameClass extends Game {
 
     @Override
     public void dispose() {
-        // LOG
-        Gdx.app.log(TITLE, "dispose()");
         super.dispose();
 
 //        batch.dispose();
@@ -46,8 +42,6 @@ public class BreakoutGameClass extends Game {
 
     @Override
     public void render() {
-        // LOG
-        Gdx.app.log(TITLE, "render()");
         super.render();
 
 //        Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -69,22 +63,16 @@ public class BreakoutGameClass extends Game {
 
     @Override
     public void resize(int width, int height) {
-        // LOG
-        Gdx.app.log(TITLE, "resize(..)");
         super.resize(width, height);
     }
 
     @Override
     public void pause() {
-        // LOG
-        Gdx.app.log(TITLE, "pause()");
         super.pause();
     }
 
     @Override
     public void resume() {
-        // LOG
-        Gdx.app.log(TITLE, "resume()");
         super.resume();
     }
 }
