@@ -26,7 +26,7 @@ public class Splash implements Screen {
         splash.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         Tween.set(splash, SpriteAccessor.ALPHA).target(0).start(tweenManager);
-        Tween.to(splash, SpriteAccessor.ALPHA, 2).target(1).start(tweenManager); // Animate two seconds
+        Tween.to(splash, SpriteAccessor.ALPHA, 2).target(1).repeatYoyo(1, 2).start(tweenManager);
     }
 
     @Override
