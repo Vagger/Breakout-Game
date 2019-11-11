@@ -22,8 +22,19 @@ public class MainMenu implements Screen {
     private Label heading;
 
     @Override
+    public void render(float delta) {
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        stage.act(delta);
+        stage.draw();
+    }
+
+    @Override
     public void show() {
         stage = new Stage();
+
+        Gdx.input.setInputProcessor(stage);
 
         // The fonts of the buttons (white and black)
         white = new BitmapFont(Gdx.files.internal("fonts/ocrawhite.fnt"), false);
@@ -48,15 +59,6 @@ public class MainMenu implements Screen {
         table.add(buttonExit);
         table.debug();
         stage.addActor(table);
-    }
-
-    @Override
-    public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        stage.act(delta);
-        stage.draw();
     }
 
     @Override
