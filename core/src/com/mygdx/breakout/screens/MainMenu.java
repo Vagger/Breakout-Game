@@ -2,14 +2,17 @@ package com.mygdx.breakout.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class MainMenu implements Screen {
 
@@ -37,8 +40,8 @@ public class MainMenu implements Screen {
         Gdx.input.setInputProcessor(stage);
 
         // The fonts of the buttons (white and black)
-        white = new BitmapFont(Gdx.files.internal("fonts/ocrawhite.fnt"), false);
-        black = new BitmapFont(Gdx.files.internal("fonts/ocrablack.fnt"), false);
+        white = new BitmapFont(Gdx.files.internal("fonts/arialwhite.fnt"), false);
+        black = new BitmapFont(Gdx.files.internal("fonts/arialblack.fnt"), false);
 
         atlas = new TextureAtlas("ui/button.pack");
         skin = new Skin(atlas);
@@ -53,11 +56,26 @@ public class MainMenu implements Screen {
         textButtonStyle.pressedOffsetY = -1; // When pressed, the text on the button moves down by 1
         textButtonStyle.font = black;
 
+        // Buttons
         buttonExit = new TextButton("EXIT", textButtonStyle);
+        buttonExit.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.exit();
+            }
+        });
         buttonExit.pad(20); // Add padding to the button
 
+        // Heading
+        Label.LabelStyle headingStyle = new Label.LabelStyle(white, Color.WHITE);
+        heading = new Label("Breakout by Vahe", headingStyle);
+        heading.setFontScale(3);
+
+        // Table
+        table.add(heading);
+        table.row();
         table.add(buttonExit);
-        table.debug();
+        table.debug(); // TODO: remove later
         stage.addActor(table);
     }
 
