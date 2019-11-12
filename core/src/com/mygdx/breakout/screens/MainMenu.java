@@ -1,5 +1,6 @@
 package com.mygdx.breakout.screens;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -40,8 +41,8 @@ public class MainMenu implements Screen {
         Gdx.input.setInputProcessor(stage);
 
         // The fonts of the buttons (white and black)
-        white = new BitmapFont(Gdx.files.internal("fonts/arialwhite.fnt"), false);
-        black = new BitmapFont(Gdx.files.internal("fonts/arialblack.fnt"), false);
+        white = new BitmapFont(Gdx.files.internal("fonts/ocraextendedwhite.fnt"), false);
+        black = new BitmapFont(Gdx.files.internal("fonts/ocraextendedblack.fnt"), false);
 
         atlas = new TextureAtlas("ui/button.pack");
         skin = new Skin(atlas);
@@ -57,6 +58,7 @@ public class MainMenu implements Screen {
         textButtonStyle.font = black;
 
         // Buttons
+        // Exit button
         buttonExit = new TextButton("EXIT", textButtonStyle);
         buttonExit.addListener(new ClickListener() {
             @Override
@@ -64,15 +66,27 @@ public class MainMenu implements Screen {
                 Gdx.app.exit();
             }
         });
-        buttonExit.pad(20); // Add padding to the button
+        buttonExit.pad(15); // Add padding to the button
+
+        // Play button
+        buttonPlay = new TextButton("PLAY", textButtonStyle);
+        buttonPlay.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Levels()); // Go to levels screen
+            }
+        });
+        buttonPlay.pad(15);
 
         // Heading
         Label.LabelStyle headingStyle = new Label.LabelStyle(white, Color.WHITE);
         heading = new Label("Breakout by Vahe", headingStyle);
-        heading.setFontScale(3);
+        heading.setFontScale(2);
 
         // Table
         table.add(heading);
+        table.row();
+        table.add(buttonPlay);
         table.row();
         table.add(buttonExit);
         table.debug(); // TODO: remove later
@@ -101,6 +115,10 @@ public class MainMenu implements Screen {
 
     @Override
     public void dispose() {
-
+        stage.dispose();
+        atlas.dispose();
+        skin.dispose();
+        white.dispose();
+        black.dispose();
     }
 }
