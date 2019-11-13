@@ -24,7 +24,7 @@ public class Gameplay implements Screen {
     @Override
     public void show() {
         // World and its gravity and stuff
-        world = new World(new Vector2(20f, 20f), true);
+        world = new World(new Vector2(0,0), true);
         debugRenderer = new Box2DDebugRenderer();
 
         // Camera
@@ -41,19 +41,44 @@ public class Gameplay implements Screen {
             }
         });
 
-//        // Pad definition
-//        BodyDef padDef = new BodyDef();
-//        padDef.type = BodyDef.BodyType.KinematicBody;
-//        padDef.position.set(0, 1);
-//
-//        // Pad shape
-//        EdgeShape padShape = new EdgeShape();
-//        padShape.set(0.5);
+        // Pad definition
+        final BodyDef padDef = new BodyDef();
+        padDef.type = BodyDef.BodyType.DynamicBody;
+        padDef.position.set(0, 0);
+
+        Gdx.input.setInputProcessor(new InputController() {
+            @Override
+            public boolean keyDown(int keyCode) {
+                if (keyCode == Input.Keys.RIGHT) {
+                    padDef.linearVelocity.set(20, 0);
+                }
+                if (keyCode == Input.Keys.LEFT) {
+                    padDef.linearVelocity.set(-20, 0);
+                }
+                return true;
+            }
+        });
+
+        // Pad shape
+        ChainShape padShape = new ChainShape();
+        padShape.createChain(new Vector2[]{new Vector2(-50, -200),
+                new Vector2(-50, -195),
+                new Vector2(50, -195),
+                new Vector2(50, -200),
+                new Vector2(-50, -200)});
+
+        // Ground fixture def
+        FixtureDef padFixtureDef = new FixtureDef();
+        padFixtureDef.shape = padShape;
+        padFixtureDef.friction = 1;
+        padFixtureDef.restitution = 0;
 
         // Ball definition
-        BodyDef ballDef = new BodyDef();
+        final BodyDef ballDef = new BodyDef();
         ballDef.type = BodyDef.BodyType.DynamicBody;
         ballDef.position.set(0, -190);
+
+        ballDef.angularVelocity = 0;
 
         // Ball shape
         CircleShape ballShape = new CircleShape();
@@ -86,11 +111,13 @@ public class Gameplay implements Screen {
         groundFixtureDef.restitution = 0;
 
         // Create bodies
+        world.createBody(padDef).createFixture(padFixtureDef); // Pad
         world.createBody(ballDef).createFixture(ballFixtureDef); // Ball
         world.createBody(groundDef).createFixture(groundFixtureDef); // Ground
 
         ballShape.dispose();
         groundShape.dispose();
+        padShape.dispose();
     }
 
     @Override
@@ -105,7 +132,9 @@ public class Gameplay implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        camera.viewportWidth = width;
+        camera.viewportHeight = height;
+        camera.update();
     }
 
     @Override
