@@ -18,9 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.breakout.tween.ActorAccessor;
-import sun.java2d.pipe.AAShapePipe;
 
 public class MainMenu implements Screen {
 
@@ -51,36 +49,18 @@ public class MainMenu implements Screen {
 
         Gdx.input.setInputProcessor(stage);
 
-        // The fonts of the buttons (white and black)
-        white = new BitmapFont(Gdx.files.internal("fonts/sylfaenwhite.fnt"), false);
-        black = new BitmapFont(Gdx.files.internal("fonts/sylfaenblack.fnt"), false);
-
         atlas = new TextureAtlas("ui/button.pack");
-        skin = new Skin(atlas);
+        skin = new Skin(Gdx.files.internal("ui/menuSkin.json"), atlas);
 
         table = new Table(skin);
         table.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
-        textButtonStyle.up = skin.getDrawable("button.up");
-        textButtonStyle.down = skin.getDrawable("button.down");
-        textButtonStyle.pressedOffsetX = 1; // When pressed, the text on the button moves right by 1
-        textButtonStyle.pressedOffsetY = -1; // When pressed, the text on the button moves down by 1
-        textButtonStyle.font = black;
-
-        // Buttons
-        // Exit button
-        buttonExit = new TextButton("EXIT", textButtonStyle);
-        buttonExit.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.exit();
-            }
-        });
-        buttonExit.pad(15); // Add padding to the button
+        // Heading
+        heading = new Label("Breakout", skin);
+        heading.setFontScale(2);
 
         // Play button
-        buttonPlay = new TextButton("PLAY", textButtonStyle);
+        buttonPlay = new TextButton("PLAY", skin);
         buttonPlay.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -89,9 +69,15 @@ public class MainMenu implements Screen {
         });
         buttonPlay.pad(15);
 
-        // Heading
-        heading = new Label("Breakout", new Label.LabelStyle(white, Color.WHITE));
-        heading.setFontScale(2);
+        // Exit button
+        buttonExit = new TextButton("EXIT", skin);
+        buttonExit.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.exit();
+            }
+        });
+        buttonExit.pad(15); // Add padding to the button
 
         // Table
         table.add(heading);
