@@ -6,11 +6,13 @@ import aurelienribon.tweenengine.TweenCallback;
 import aurelienribon.tweenengine.TweenManager;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.breakout.controllers.InputController;
 import com.mygdx.breakout.tween.SpriteAccessor;
 
 public class Splash implements Screen {
@@ -20,6 +22,20 @@ public class Splash implements Screen {
 
     @Override
     public void show() {
+        Gdx.input.setInputProcessor(new InputController() {
+            @Override
+            public boolean keyDown(int keyCode) {
+                switch (keyCode) {
+                    case Input.Keys.ESCAPE:
+                        Gdx.app.exit();
+                        break;
+                    case Input.Keys.ANY_KEY:
+                        ((Game) Gdx.app.getApplicationListener()).setScreen(new MainMenu());
+                }
+                return true;
+            }
+        });
+
         batch = new SpriteBatch();
         tweenManager = new TweenManager();
         Tween.registerAccessor(Sprite.class, new SpriteAccessor());

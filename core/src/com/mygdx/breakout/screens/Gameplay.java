@@ -50,13 +50,16 @@ public class Gameplay implements Screen {
                         ((Game) Gdx.app.getApplicationListener()).setScreen(new MainMenu());
                         break;
                     case Input.Keys.SPACE:
-                        ballMovement.x = ballSpeed;
-                        ballMovement.y = ballSpeed;
+                        ball.setLinearVelocity(ballSpeed, ballSpeed);
+//                        ballMovement.x = ballSpeed;
+//                        ballMovement.y = ballSpeed;
                     case Input.Keys.LEFT:
-                        padMovement.x = -padSpeed;
+                        pad.setLinearVelocity(-padSpeed, 0);
+//                        padMovement.x = -padSpeed;
                         break;
                     case Input.Keys.RIGHT:
-                        padMovement.x = padSpeed;
+                        pad.setLinearVelocity(padSpeed, 0);
+//                        padMovement.x = padSpeed;
                         break;
                 }
                 return true;
@@ -67,7 +70,8 @@ public class Gameplay implements Screen {
                 switch (keyCode) {
                     case Input.Keys.LEFT:
                     case Input.Keys.RIGHT:
-                        padMovement.x = 0;
+                        pad.setLinearVelocity(0,0);
+//                        padMovement.x = 0;
                         break;
                 }
                 return true;
@@ -175,8 +179,12 @@ public class Gameplay implements Screen {
 
 
         world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERATION);
-        pad.applyForceToCenter(padMovement, true);
-        ball.applyForceToCenter(ballMovement, true);
+
+//        pad.setLinearVelocity(10, 0);
+//        ball.setLinearVelocity(10,0);
+
+//        pad.applyForceToCenter(padMovement, true);
+//        ball.applyForceToCenter(ballMovement, true);
 
         debugRenderer.render(world, camera.combined);
     }
