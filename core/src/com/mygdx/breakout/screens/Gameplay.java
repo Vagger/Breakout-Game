@@ -6,11 +6,12 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.mygdx.breakout.controllers.InputController;
-import com.sun.net.httpserver.Filter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Gameplay implements Screen {
 
@@ -18,24 +19,56 @@ public class Gameplay implements Screen {
     private Box2DDebugRenderer debugRenderer;
     private OrthographicCamera camera;
 
+    private boolean gameStarted = false;
+    private float padSpeed = 500;
+    private float ballSpeed = 5000;
+    private Vector2 padMovement = new Vector2(0,0);
+    private Vector2 ballMovement = new Vector2(0,0);
+
+    private Body pad;
+    private Body ball;
+    private Body walls;
+
     private static final float TIMESTEP = 1 / 60f; // frames per second
     private static final int VELOCITYITERATIONS = 8, POSITIONITERATION = 3; // Common values
 
     @Override
     public void show() {
         // World and its gravity and stuff
-        world = new World(new Vector2(0,0), true);
+        world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
 
         // Camera
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()); // 1:1 ratio
 
-        // Press Esc, return to Main Menu
+        // INPUT PROCESSOR
         Gdx.input.setInputProcessor(new InputController() {
             @Override
             public boolean keyDown(int keyCode) {
-                if (keyCode == Input.Keys.ESCAPE) {
-                    ((Game) Gdx.app.getApplicationListener()).setScreen(new MainMenu());
+                switch (keyCode) {
+                    case Input.Keys.ESCAPE:
+                        ((Game) Gdx.app.getApplicationListener()).setScreen(new MainMenu());
+                        break;
+                    case Input.Keys.SPACE:
+                        ballMovement.x = ballSpeed;
+                        ballMovement.y = ballSpeed;
+                    case Input.Keys.LEFT:
+                        padMovement.x = -padSpeed;
+                        break;
+                    case Input.Keys.RIGHT:
+                        padMovement.x = padSpeed;
+                        break;
+                }
+                return true;
+            }
+
+            @Override
+            public boolean keyUp(int keyCode) {
+                switch (keyCode) {
+                    case Input.Keys.LEFT:
+                    case Input.Keys.RIGHT:
+                        padMovement.x = 0;
+                        break;
                 }
                 return true;
             }
@@ -46,28 +79,15 @@ public class Gameplay implements Screen {
         padDef.type = BodyDef.BodyType.DynamicBody;
         padDef.position.set(0, 0);
 
-        Gdx.input.setInputProcessor(new InputController() {
-            @Override
-            public boolean keyDown(int keyCode) {
-                if (keyCode == Input.Keys.RIGHT) {
-                    padDef.linearVelocity.set(20, 0);
-                }
-                if (keyCode == Input.Keys.LEFT) {
-                    padDef.linearVelocity.set(-20, 0);
-                }
-                return true;
-            }
-        });
-
         // Pad shape
-        ChainShape padShape = new ChainShape();
-        padShape.createChain(new Vector2[]{new Vector2(-50, -200),
-                new Vector2(-50, -195),
-                new Vector2(50, -195),
-                new Vector2(50, -200),
-                new Vector2(-50, -200)});
+        PolygonShape padShape = new PolygonShape();
+        padShape.set(new Vector2[]{new Vector2(-40, -200),
+                new Vector2(-40, -195),
+                new Vector2(40, -195),
+                new Vector2(40, -200),
+                new Vector2(-40, -200)});
 
-        // Ground fixture def
+        // Pad fixture def
         FixtureDef padFixtureDef = new FixtureDef();
         padFixtureDef.shape = padShape;
         padFixtureDef.friction = 1;
@@ -78,8 +98,6 @@ public class Gameplay implements Screen {
         ballDef.type = BodyDef.BodyType.DynamicBody;
         ballDef.position.set(0, -190);
 
-        ballDef.angularVelocity = 0;
-
         // Ball shape
         CircleShape ballShape = new CircleShape();
         ballShape.setRadius(5f);
@@ -87,47 +105,80 @@ public class Gameplay implements Screen {
         // Ball Fixture definition
         FixtureDef ballFixtureDef = new FixtureDef();
         ballFixtureDef.shape = ballShape;
-        ballFixtureDef.density = 1; // 2.5 kg in 1 m^2
+        ballFixtureDef.density = 2; // 2.5 kg in 1 m^2
         ballFixtureDef.friction = 0; // 0 = slides like a mofo, 1 = doesn't slide
         ballFixtureDef.restitution = 1; // not losing velocity when falling down
 
-        // Ground definition
-        BodyDef groundDef = new BodyDef();
-        groundDef.type = BodyDef.BodyType.StaticBody;
-        groundDef.position.set(0, 0);
+        // Walls definition
+        BodyDef wallsDef = new BodyDef();
+        wallsDef.type = BodyDef.BodyType.StaticBody;
+        wallsDef.position.set(0, 0);
 
-        // Ground shape
-        ChainShape groundShape = new ChainShape();
-        groundShape.createChain(new Vector2[]{new Vector2(-200, -200),
-                                                new Vector2(-200, 200),
-                                                new Vector2(200, 200),
-                                                new Vector2(200, -200),
-                                                new Vector2(-200, -200)});
+        // Walls shape
+        ChainShape wallsShape = new ChainShape();
+        wallsShape.createChain(new Vector2[]{new Vector2(-200, -200),
+                new Vector2(-200, 200),
+                new Vector2(200, 200),
+                new Vector2(200, -200),
+                new Vector2(-200, -200)});
 
-        // Ground fixture def
-        FixtureDef groundFixtureDef = new FixtureDef();
-        groundFixtureDef.shape = groundShape;
-        groundFixtureDef.friction = 1;
-        groundFixtureDef.restitution = 0;
+        // Walls fixture def
+        FixtureDef wallsFixtureDef = new FixtureDef();
+        wallsFixtureDef.shape = wallsShape;
+        wallsFixtureDef.friction = 1;
+
+        // Tile definition
+        final BodyDef tileDef = new BodyDef();
+        tileDef.type = BodyDef.BodyType.StaticBody;
+
+        for (int ypos = 190; ypos > 30; ypos -= 30) {
+            for (int xpos = -170; xpos < 150; xpos += 50) {
+                // Tile shape
+                PolygonShape tileShape = new PolygonShape();
+                tileShape.set(new Vector2[]{new Vector2(xpos, ypos),
+                        new Vector2(xpos+40, ypos),
+                        new Vector2(xpos+40, ypos-20),
+                        new Vector2(xpos, ypos-20),
+                        new Vector2(xpos, ypos)});
+
+                // Tile fixture def
+                FixtureDef tileFixtureDef = new FixtureDef();
+                tileFixtureDef.shape = tileShape;
+
+                // Tile body
+                world.createBody(tileDef).createFixture(tileFixtureDef);
+            }
+        }
+
+
+
 
         // Create bodies
-        world.createBody(padDef).createFixture(padFixtureDef); // Pad
-        world.createBody(ballDef).createFixture(ballFixtureDef); // Ball
-        world.createBody(groundDef).createFixture(groundFixtureDef); // Ground
+        pad = world.createBody(padDef);
+        pad.createFixture(padFixtureDef); // Pad
+
+        ball = world.createBody(ballDef);
+        ball.createFixture(ballFixtureDef); // Ball
+
+        walls = world.createBody(wallsDef);
+        walls.createFixture(wallsFixtureDef); // Walls
 
         ballShape.dispose();
-        groundShape.dispose();
+        wallsShape.dispose();
         padShape.dispose();
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0,0,0,1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        debugRenderer.render(world, camera.combined);
 
         world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERATION);
+        pad.applyForceToCenter(padMovement, true);
+        ball.applyForceToCenter(ballMovement, true);
+
+        debugRenderer.render(world, camera.combined);
     }
 
     @Override
@@ -157,4 +208,5 @@ public class Gameplay implements Screen {
         world.dispose();
         debugRenderer.dispose();
     }
+
 }
