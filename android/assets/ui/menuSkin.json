@@ -7,8 +7,8 @@
     "blue": { "r": 0, "g": 0, "b": 1, "a": 1 }
   },
   "com.badlogic.gdx.graphics.g2d.BitmapFont": {
-    "white": { "file":  "fonts/ocrawhite.fnt"},
-    "black": { "file":  "fonts/ocrablack.fnt"}
+    "white": { "file":  "fonts/arialwhite.fnt"},
+    "black": { "file":  "fonts/arialblack.fnt"}
   },
   "com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle": {
     "default": { "font": "white", "fontColor":  "white"}

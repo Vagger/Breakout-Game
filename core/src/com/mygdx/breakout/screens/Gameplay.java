@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
 import com.mygdx.breakout.controllers.InputController;
 
 import java.util.ArrayList;
@@ -19,14 +20,18 @@ public class Gameplay implements Screen {
     private Box2DDebugRenderer debugRenderer;
     private OrthographicCamera camera;
 
+    private Array<Body> bodies = new Array<>();
+
     private boolean gameStarted = false;
     private float padSpeed = 500;
     private float ballSpeed = 5000;
-    private Vector2 padMovement = new Vector2(0,0);
-    private Vector2 ballMovement = new Vector2(0,0);
+
+    private final Vector2 BALL_INITIAL_POSITION = new Vector2(0, -190);
+    private final Vector2 PAD_INITIAL_POSITION = new Vector2(0, -195);
 
     private Body pad;
     private Body ball;
+    private List<Body> tiles = new ArrayList<>();
     private Body walls;
 
     private static final float TIMESTEP = 1 / 60f; // frames per second
@@ -51,15 +56,11 @@ public class Gameplay implements Screen {
                         break;
                     case Input.Keys.SPACE:
                         ball.setLinearVelocity(ballSpeed, ballSpeed);
-//                        ballMovement.x = ballSpeed;
-//                        ballMovement.y = ballSpeed;
                     case Input.Keys.LEFT:
                         pad.setLinearVelocity(-padSpeed, 0);
-//                        padMovement.x = -padSpeed;
                         break;
                     case Input.Keys.RIGHT:
                         pad.setLinearVelocity(padSpeed, 0);
-//                        padMovement.x = padSpeed;
                         break;
                 }
                 return true;
@@ -70,8 +71,7 @@ public class Gameplay implements Screen {
                 switch (keyCode) {
                     case Input.Keys.LEFT:
                     case Input.Keys.RIGHT:
-                        pad.setLinearVelocity(0,0);
-//                        padMovement.x = 0;
+                        pad.setLinearVelocity(0, 0);
                         break;
                 }
                 return true;
@@ -79,28 +79,29 @@ public class Gameplay implements Screen {
         });
 
         // Pad definition
-        final BodyDef padDef = new BodyDef();
+        BodyDef padDef = new BodyDef();
         padDef.type = BodyDef.BodyType.DynamicBody;
-        padDef.position.set(0, 0);
+        padDef.position.set(PAD_INITIAL_POSITION);
 
         // Pad shape
         PolygonShape padShape = new PolygonShape();
-        padShape.set(new Vector2[]{new Vector2(-40, -200),
-                new Vector2(-40, -195),
-                new Vector2(40, -195),
-                new Vector2(40, -200),
-                new Vector2(-40, -200)});
+        padShape.setAsBox(50,5);
+//        padShape.set(new Vector2[]{new Vector2(-40, -200),
+//                new Vector2(-40, -195),
+//                new Vector2(40, -195),
+//                new Vector2(40, -200),
+//                new Vector2(-40, -200)});
 
         // Pad fixture def
         FixtureDef padFixtureDef = new FixtureDef();
         padFixtureDef.shape = padShape;
-        padFixtureDef.friction = 1;
+        padFixtureDef.friction = 0;
         padFixtureDef.restitution = 0;
 
         // Ball definition
-        final BodyDef ballDef = new BodyDef();
+        BodyDef ballDef = new BodyDef();
         ballDef.type = BodyDef.BodyType.DynamicBody;
-        ballDef.position.set(0, -190);
+        ballDef.position.set(BALL_INITIAL_POSITION);
 
         // Ball shape
         CircleShape ballShape = new CircleShape();
@@ -132,30 +133,33 @@ public class Gameplay implements Screen {
         wallsFixtureDef.friction = 1;
 
         // Tile definition
-        final BodyDef tileDef = new BodyDef();
-        tileDef.type = BodyDef.BodyType.StaticBody;
 
-        for (int ypos = 190; ypos > 30; ypos -= 30) {
-            for (int xpos = -170; xpos < 150; xpos += 50) {
+        for (int ypos = 150; ypos > 30; ypos -= 30) {
+            for (int xpos = -150; xpos < 170; xpos += 50) {
+                BodyDef tileDef = new BodyDef();
+                tileDef.type = BodyDef.BodyType.StaticBody;
+                tileDef.position.set(xpos, ypos);
+
                 // Tile shape
                 PolygonShape tileShape = new PolygonShape();
-                tileShape.set(new Vector2[]{new Vector2(xpos, ypos),
-                        new Vector2(xpos+40, ypos),
-                        new Vector2(xpos+40, ypos-20),
-                        new Vector2(xpos, ypos-20),
-                        new Vector2(xpos, ypos)});
+//                tileShape.set(new Vector2[]{new Vector2(xpos, ypos),
+//                        new Vector2(xpos + 40, ypos),
+//                        new Vector2(xpos + 40, ypos - 20),
+//                        new Vector2(xpos, ypos - 20),
+//                        new Vector2(xpos, ypos)});
+                tileShape.setAsBox(20, 10);
 
                 // Tile fixture def
                 FixtureDef tileFixtureDef = new FixtureDef();
                 tileFixtureDef.shape = tileShape;
 
                 // Tile body
-                world.createBody(tileDef).createFixture(tileFixtureDef);
+                Body tile = world.createBody(tileDef);
+                tile.createFixture(tileFixtureDef);
+
+                tiles.add(tile);
             }
         }
-
-
-
 
         // Create bodies
         pad = world.createBody(padDef);
@@ -177,14 +181,27 @@ public class Gameplay implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-
         world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERATION);
 
-//        pad.setLinearVelocity(10, 0);
-//        ball.setLinearVelocity(10,0);
+        System.out.println(ball.getPosition());
 
-//        pad.applyForceToCenter(padMovement, true);
-//        ball.applyForceToCenter(ballMovement, true);
+        world.getBodies(bodies);
+
+        // GAME OVER
+        if (ball.getPosition().y < BALL_INITIAL_POSITION.y) {
+            this.pause();
+            try {
+                Thread.sleep(1000); // Pause for a second, let the player realise his mistake
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            this.show(); // Then restart
+
+//            ball.getPosition().set(BALL_INITIAL_POSITION);
+//            ball.setLinearVelocity(0,0);
+//            pad.getPosition().set(PAD_INITIAL_POSITION);
+//            pad.setLinearVelocity(0,0);
+        }
 
         debugRenderer.render(world, camera.combined);
     }
@@ -198,7 +215,10 @@ public class Gameplay implements Screen {
 
     @Override
     public void pause() {
-
+        world.getBodies(bodies);
+        for (Body body : bodies) {
+            body.setLinearVelocity(0,0);
+        }
     }
 
     @Override
