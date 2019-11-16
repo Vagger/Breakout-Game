@@ -6,6 +6,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
@@ -19,6 +21,9 @@ public class Gameplay implements Screen {
     private World world;
     private Box2DDebugRenderer debugRenderer;
     private OrthographicCamera camera;
+
+    SpriteBatch batch;
+    BitmapFont score = new BitmapFont();
 
     private Array<Body> bodies = new Array<>();
 
@@ -45,6 +50,9 @@ public class Gameplay implements Screen {
 
         // Camera
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()); // 1:1 ratio
+
+        // Batch
+        batch = new SpriteBatch();
 
         // INPUT PROCESSOR
         Gdx.input.setInputProcessor(new InputController() {
@@ -85,12 +93,7 @@ public class Gameplay implements Screen {
 
         // Pad shape
         PolygonShape padShape = new PolygonShape();
-        padShape.setAsBox(50,5);
-//        padShape.set(new Vector2[]{new Vector2(-40, -200),
-//                new Vector2(-40, -195),
-//                new Vector2(40, -195),
-//                new Vector2(40, -200),
-//                new Vector2(-40, -200)});
+        padShape.setAsBox(50, 5);
 
         // Pad fixture def
         FixtureDef padFixtureDef = new FixtureDef();
@@ -133,7 +136,6 @@ public class Gameplay implements Screen {
         wallsFixtureDef.friction = 1;
 
         // Tile definition
-
         for (int ypos = 150; ypos > 30; ypos -= 30) {
             for (int xpos = -150; xpos < 170; xpos += 50) {
                 BodyDef tileDef = new BodyDef();
@@ -142,11 +144,6 @@ public class Gameplay implements Screen {
 
                 // Tile shape
                 PolygonShape tileShape = new PolygonShape();
-//                tileShape.set(new Vector2[]{new Vector2(xpos, ypos),
-//                        new Vector2(xpos + 40, ypos),
-//                        new Vector2(xpos + 40, ypos - 20),
-//                        new Vector2(xpos, ypos - 20),
-//                        new Vector2(xpos, ypos)});
                 tileShape.setAsBox(20, 10);
 
                 // Tile fixture def
@@ -183,9 +180,22 @@ public class Gameplay implements Screen {
 
         world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERATION);
 
+//        batch.begin();
+//        score.draw(batch, "Score = 0", 0, 0);
+//
+//        batch.end();
+
         System.out.println(ball.getPosition());
 
         world.getBodies(bodies);
+
+        // BALL HITS THE TILE
+        for (Body body : bodies) {
+            if (!body.equals(ball) && !body.equals(pad) && !body.equals(walls)) {
+                System.out.println("Tile position " + body.getPosition().x + " " + body.getPosition().y);
+                intersected(ball, body);
+            }
+        }
 
         // GAME OVER
         if (ball.getPosition().y < BALL_INITIAL_POSITION.y) {
@@ -196,14 +206,25 @@ public class Gameplay implements Screen {
                 e.printStackTrace();
             }
             this.show(); // Then restart
-
-//            ball.getPosition().set(BALL_INITIAL_POSITION);
-//            ball.setLinearVelocity(0,0);
-//            pad.getPosition().set(PAD_INITIAL_POSITION);
-//            pad.setLinearVelocity(0,0);
         }
 
         debugRenderer.render(world, camera.combined);
+    }
+
+    private void intersected(Body ball, Body tile) {
+
+        float xdiff = ball.getPosition().x - tile.getPosition().x;
+        xdiff = Math.abs(xdiff);
+        float ydiff = ball.getPosition().y - tile.getPosition().y;
+        ydiff = Math.abs(ydiff);
+
+        if (xdiff > -5 && xdiff < 5 && ydiff > -25 && ydiff < 25) {
+            world.destroyBody(tile);
+        }
+
+        if (xdiff > -25 && xdiff < 25 && ydiff > -5 && ydiff < 5) {
+            world.destroyBody(tile);
+        }
     }
 
     @Override
@@ -215,10 +236,7 @@ public class Gameplay implements Screen {
 
     @Override
     public void pause() {
-        world.getBodies(bodies);
-        for (Body body : bodies) {
-            body.setLinearVelocity(0,0);
-        }
+        world.isLocked();
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.breakout.screens.Gameplay;
 import com.mygdx.breakout.screens.Splash;
 
 public class BreakoutGameClass extends Game {
@@ -20,45 +21,18 @@ public class BreakoutGameClass extends Game {
 
     @Override
     public void create() {
-        setScreen(new Splash());
-
-//        batch = new SpriteBatch();
-//        ball = new Texture("blueball.png");
-//        pad = new Texture("brownpad.png");
-//        tile = new Texture("greentile.png");
-//        score = new BitmapFont();
+//        setScreen(new Splash());
+        setScreen(new Gameplay());
     }
 
     @Override
     public void dispose() {
         super.dispose();
-
-//        batch.dispose();
-//        ball.dispose();
-//        pad.dispose();
-//        tile.dispose();
-//        score.dispose();
     }
 
     @Override
     public void render() {
         super.render();
-
-//        Gdx.gl.glClearColor(0, 0, 0, 1);
-//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-//        batch.begin();
-//
-//        score.draw(batch, "Score = 0", 30, 460);
-//
-//        batch.draw(pad, 300, 10, 65, 10);
-//        batch.draw(ball, 315, 20, 15, 15);
-//
-//        for (int y = 420; y > 200; y -= 20) {
-//            for (int x = 30; x < 570; x += 65) {
-//                batch.draw(tile, x, y, 60, 15);
-//            }
-//        }
-//        batch.end();
     }
 
     @Override
