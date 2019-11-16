@@ -29,7 +29,7 @@ public class Gameplay implements Screen {
 
     private boolean gameStarted = false;
     private float padSpeed = 500;
-    private float ballSpeed = 5000;
+    private float ballSpeed = 50000;
 
     private final Vector2 BALL_INITIAL_POSITION = new Vector2(0, -190);
     private final Vector2 PAD_INITIAL_POSITION = new Vector2(0, -195);
@@ -93,7 +93,7 @@ public class Gameplay implements Screen {
 
         // Pad shape
         PolygonShape padShape = new PolygonShape();
-        padShape.setAsBox(50, 5);
+        padShape.setAsBox(55, 7);
 
         // Pad fixture def
         FixtureDef padFixtureDef = new FixtureDef();
@@ -180,20 +180,30 @@ public class Gameplay implements Screen {
 
         world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERATION);
 
-//        batch.begin();
-//        score.draw(batch, "Score = 0", 0, 0);
-//
-//        batch.end();
+        System.out.println(world.getContactCount());
 
-        System.out.println(ball.getPosition());
+        Array<Contact> intersectedBodies;
+        if (world.getContactCount() > 1) {
+            intersectedBodies = world.getContactList();
+            for (Contact contact : intersectedBodies) {
+                Body contactedBodyA = contact.getFixtureA().getBody();
+                if (!contactedBodyA.equals(ball) && !contactedBodyA.equals(pad) && !contactedBodyA.equals(walls)){
+                    world.destroyBody(contactedBodyA);
+                }
+                Body contactedBodyB = contact.getFixtureB().getBody();
+                if (!contactedBodyB.equals(ball) && !contactedBodyB.equals(pad) && !contactedBodyB.equals(walls)){
+                    world.destroyBody(contactedBodyB);
+                }
+            }
+        }
 
         world.getBodies(bodies);
 
         // BALL HITS THE TILE
         for (Body body : bodies) {
             if (!body.equals(ball) && !body.equals(pad) && !body.equals(walls)) {
-                System.out.println("Tile position " + body.getPosition().x + " " + body.getPosition().y);
-                intersected(ball, body);
+//                System.out.println("Tile position " + body.getPosition().x + " " + body.getPosition().y);
+//                intersected(ball, body);
             }
         }
 
@@ -218,11 +228,11 @@ public class Gameplay implements Screen {
         float ydiff = ball.getPosition().y - tile.getPosition().y;
         ydiff = Math.abs(ydiff);
 
-        if (xdiff > -5 && xdiff < 5 && ydiff > -25 && ydiff < 25) {
+        if (xdiff > -1 && xdiff < 1 && ydiff > -21 && ydiff < 21) {
             world.destroyBody(tile);
         }
 
-        if (xdiff > -25 && xdiff < 25 && ydiff > -5 && ydiff < 5) {
+        if (xdiff > -41 && xdiff < 41 && ydiff > -1 && ydiff < 1) {
             world.destroyBody(tile);
         }
     }

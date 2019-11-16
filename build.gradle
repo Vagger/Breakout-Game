@@ -47,7 +47,9 @@ project(":desktop") {
         api "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
-        
+
+        compile group: 'org.jbox2d', name: 'jbox2d', version: '2.1.2.2', ext: 'pom'
+
     }
 }
 
@@ -116,5 +118,7 @@ project(":core") {
         api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
 
         compile "org.mini2Dx:universal-tween-engine:6.3.3"
+        compile group: 'org.jbox2d', name: 'jbox2d', version: '2.1.2.2', ext: 'pom'
+
     }
 }
