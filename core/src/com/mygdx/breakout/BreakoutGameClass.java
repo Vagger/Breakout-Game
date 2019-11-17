@@ -11,7 +11,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.breakout.controllers.InputController;
-import com.mygdx.breakout.screens.MainMenu;
 
 public class BreakoutGameClass extends Game {
     public static String TITLE = "Breakout";
@@ -69,13 +68,6 @@ public class BreakoutGameClass extends Game {
         addWalls();
 
         addTiles();
-
-
-
-
-
-
-
     }
 
     @Override
