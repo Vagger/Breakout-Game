@@ -14,11 +14,11 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.breakout.controllers.InputController;
-import com.mygdx.breakout.enums.Level;
 
 import java.util.ArrayList;
 import java.util.List;
 
+// MOVED TO BREAKOUT GAME CLASS
 public class Gameplay implements Screen {
 
     private World world;
@@ -42,11 +42,7 @@ public class Gameplay implements Screen {
 
     private Body pad;
     private Body ball;
-    private List<Body> tiles = new ArrayList<>();
     private Body walls;
-
-    private Level scoreStatus;
-    private String levelString;
 
     Stage stage;
 
@@ -79,7 +75,6 @@ public class Gameplay implements Screen {
                     case Input.Keys.SPACE:
                         if (!gameStarted) {
                             ball.setLinearVelocity(ballSpeed, ballSpeed);
-                            scoreStatus = Level.REALLY_SLOW_TURTLE;
                             gameStarted = true;
                             break;
                         }
@@ -172,8 +167,6 @@ public class Gameplay implements Screen {
                 // Tile body
                 Body tile = world.createBody(tileDef);
                 tile.createFixture(tileFixtureDef);
-
-                tiles.add(tile);
             }
         }
 

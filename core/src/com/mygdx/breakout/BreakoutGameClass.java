@@ -9,60 +9,45 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.breakout.controllers.InputController;
-import com.mygdx.breakout.enums.Level;
 import com.mygdx.breakout.screens.MainMenu;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class BreakoutGameClass extends Game {
     public static String TITLE = "Breakout";
-    public static String VERSION = "0.0.1";
+    public static String VERSION = "1.0.1";
 
     private World world;
     private Box2DDebugRenderer debugRenderer;
     private OrthographicCamera camera;
 
-    SpriteBatch batch;
+    private SpriteBatch batch;
     private int score = 0;
     private String scoreText;
-    BitmapFont font;
+    private String controlsText;
+    private BitmapFont font;
 
-    private Array<Body> bodies = new Array<>();
-
-    private boolean gamePaused;
-    private boolean notPlaying;
+    private boolean gameStarted;
+    private boolean gameOver;
 
     private float padSpeed = 500;
     private float ballSpeed = 999;
-    private float BALL_INITIAL_MASS = 200;
 
     private final Vector2 BALL_INITIAL_POSITION = new Vector2(0, -187);
     private final Vector2 PAD_INITIAL_POSITION = new Vector2(0, -195);
 
     private Body pad;
     private Body ball;
-    private List<Body> tiles = new ArrayList<>();
     private Body walls;
-
-    private Level scoreStatus;
-    private String levelString;
-
-    Stage stage;
 
     private static final float TIMESTEP = 1 / 60f; // frames per second
     private static final int VELOCITYITERATIONS = 8, POSITIONITERATION = 3; // Common values
 
     @Override
     public void create() {
-//        setScreen(new Splash());
-//        setScreen(new Gameplay());
-
         score = 0;
         scoreText = "score: ";
+        controlsText = "Press space to start the game";
         font = new BitmapFont();
 
         // World and its gravity and stuff
@@ -75,45 +60,7 @@ public class BreakoutGameClass extends Game {
         // Batch
         batch = new SpriteBatch();
 
-        notPlaying = true;
-        gamePaused = false;
-
-        // INPUT PROCESSOR
-        Gdx.input.setInputProcessor(new InputController() {
-            @Override
-            public boolean keyDown(int keyCode) {
-                switch (keyCode) {
-                    case Input.Keys.ESCAPE:
-                        ((Game) Gdx.app.getApplicationListener()).setScreen(new MainMenu());
-                        break;
-                    case Input.Keys.SPACE:
-                        if (notPlaying) {
-                            ball.setLinearVelocity(ballSpeed, ballSpeed);
-                            scoreStatus = Level.REALLY_SLOW_TURTLE;
-                            notPlaying = false;
-                            break;
-                        }
-                    case Input.Keys.LEFT:
-                        pad.setLinearVelocity(-padSpeed, 0);
-                        break;
-                    case Input.Keys.RIGHT:
-                        pad.setLinearVelocity(padSpeed, 0);
-                        break;
-                }
-                return true;
-            }
-
-            @Override
-            public boolean keyUp(int keyCode) {
-                switch (keyCode) {
-                    case Input.Keys.LEFT:
-                    case Input.Keys.RIGHT:
-                        pad.setLinearVelocity(0, 0);
-                        break;
-                }
-                return true;
-            }
-        });
+        gameStarted = false;
 
         // Pad definition
         BodyDef padDef = new BodyDef();
@@ -183,7 +130,6 @@ public class BreakoutGameClass extends Game {
                 Body tile = world.createBody(tileDef);
                 tile.createFixture(tileFixtureDef);
 
-                tiles.add(tile);
             }
         }
 
@@ -217,29 +163,58 @@ public class BreakoutGameClass extends Game {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        // INPUT PROCESSOR
+        Gdx.input.setInputProcessor(new InputController() {
+            @Override
+            public boolean keyDown(int keyCode) {
+                switch (keyCode) {
+                    case Input.Keys.ESCAPE:
+                        ((Game) Gdx.app.getApplicationListener()).setScreen(new MainMenu());
+                        break;
+                    case Input.Keys.SPACE:
+                        if (!gameStarted) {
+                            ball.setLinearVelocity(ballSpeed, ballSpeed);
+                            gameStarted = true;
+                            controlsText = "Move the pad with left and right arrows";
+                            break;
+                        }
+                    case Input.Keys.LEFT:
+                        pad.setLinearVelocity(-padSpeed, 0);
+                        break;
+                    case Input.Keys.RIGHT:
+                        pad.setLinearVelocity(padSpeed, 0);
+                        break;
+                }
+                return true;
+            }
+
+            @Override
+            public boolean keyUp(int keyCode) {
+                switch (keyCode) {
+                    case Input.Keys.LEFT:
+                    case Input.Keys.RIGHT:
+                        pad.setLinearVelocity(0, 0);
+                        break;
+                }
+                return true;
+            }
+        });
+
         world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERATION);
 
-
-        if (notPlaying){
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            this.create();
-        }
-
         batch.begin();
+        // HOW TO PLAY
+        font.setColor(1, 1, 1, 1); //white
+        font.draw(batch, controlsText, 220, 30);
 
-        // GAME OVER
+        // YOU LOST
         if (ball.getPosition().y < BALL_INITIAL_POSITION.y) {
             scoreText = "Game Over";
-            font.setColor(1,0,0,1); //red
+            font.setColor(1, 0, 0, 1); //red
             font.draw(batch, scoreText, 40, 420);
             font.draw(batch, "You scored " + score, 15, 400);
             batch.end();
-            notPlaying = true;
-//            this.create(); // Then restart
+            gameOver = true;
         }
         // YOU WON
         else if (world.getBodyCount() == 3) { // Only ball, pad and walls
@@ -248,8 +223,7 @@ public class BreakoutGameClass extends Game {
             font.draw(batch, scoreText, 40, 420);
             font.draw(batch, "You scored " + score, 15, 400);
             batch.end();
-            notPlaying = true;
-//            this.create(); // Then restart
+            gameOver = true;
         }
         // The game continues
         else {
@@ -263,20 +237,34 @@ public class BreakoutGameClass extends Game {
             intersectedBodies = world.getContactList();
             for (Contact contact : intersectedBodies) {
                 Body contactedBodyA = contact.getFixtureA().getBody();
-                if (!contactedBodyA.equals(ball) && !contactedBodyA.equals(pad) && !contactedBodyA.equals(walls)){
+                if (!contactedBodyA.equals(ball) && !contactedBodyA.equals(pad) && !contactedBodyA.equals(walls)) {
                     world.destroyBody(contactedBodyA);
                     score += 20 + Math.floor(Math.random() * 10);
-                    System.out.println(ball.getLinearVelocity());
-                    ball.setLinearVelocity(ball.getLinearVelocity().x * 1.5f, ball.getLinearVelocity().y * 1.5f);
+                    System.out.println("this");
+                    ball.setLinearVelocity(ball.getLinearVelocity().x * 2.5f, ball.getLinearVelocity().y * 2.5f);
                 }
                 Body contactedBodyB = contact.getFixtureB().getBody();
-                if (!contactedBodyB.equals(ball) && !contactedBodyB.equals(pad) && !contactedBodyB.equals(walls)){
+                if (!contactedBodyB.equals(ball) && !contactedBodyB.equals(pad) && !contactedBodyB.equals(walls)) {
                     world.destroyBody(contactedBodyB);
                     score += 20 + Math.floor(Math.random() * 10);
-                    System.out.println(ball.getLinearVelocity());
-                    ball.setLinearVelocity(ball.getLinearVelocity().x * 1.5f, ball.getLinearVelocity().y * 1.5f);
-
+                    System.out.println("that");
+                    ball.setLinearVelocity(ball.getLinearVelocity().x * 2.5f, ball.getLinearVelocity().y * 2.5f);
                 }
+            }
+
+            if (gameOver) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                gameStarted = false;
+                Array<Body> bodies = new Array<>();
+                world.getBodies(bodies);
+                for (Body body : bodies) {
+                    world.destroyBody(body);
+                }
+                this.create();
             }
         }
 
