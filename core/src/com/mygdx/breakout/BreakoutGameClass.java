@@ -62,90 +62,19 @@ public class BreakoutGameClass extends Game {
 
         gameStarted = false;
 
-        // Pad definition
-        BodyDef padDef = new BodyDef();
-        padDef.type = BodyDef.BodyType.DynamicBody;
-        padDef.position.set(PAD_INITIAL_POSITION);
+        addPad();
 
-        // Pad shape
-        PolygonShape padShape = new PolygonShape();
-        padShape.setAsBox(55, 7);
+        addBall();
 
-        // Pad fixture def
-        FixtureDef padFixtureDef = new FixtureDef();
-        padFixtureDef.shape = padShape;
-        padFixtureDef.friction = 0;
-        padFixtureDef.restitution = 0;
+        addWalls();
 
-        // Ball definition
-        BodyDef ballDef = new BodyDef();
-        ballDef.type = BodyDef.BodyType.DynamicBody;
-        ballDef.position.set(BALL_INITIAL_POSITION);
+        addTiles();
 
-        // Ball shape
-        CircleShape ballShape = new CircleShape();
-        ballShape.setRadius(5f);
 
-        // Ball Fixture definition
-        FixtureDef ballFixtureDef = new FixtureDef();
-        ballFixtureDef.shape = ballShape;
-        ballFixtureDef.density = 2; // 2.5 kg in 1 m^2
-        ballFixtureDef.friction = 0; // 0 = slides like a mofo, 1 = doesn't slide
-        ballFixtureDef.restitution = 1; // not losing velocity when falling down
 
-        // Walls definition
-        BodyDef wallsDef = new BodyDef();
-        wallsDef.type = BodyDef.BodyType.StaticBody;
-        wallsDef.position.set(0, 0);
 
-        // Walls shape
-        ChainShape wallsShape = new ChainShape();
-        wallsShape.createChain(new Vector2[]{new Vector2(-200, -200),
-                new Vector2(-200, 200),
-                new Vector2(200, 200),
-                new Vector2(200, -200),
-                new Vector2(-200, -200)});
 
-        // Walls fixture def
-        FixtureDef wallsFixtureDef = new FixtureDef();
-        wallsFixtureDef.shape = wallsShape;
-        wallsFixtureDef.friction = 1;
 
-        // Tile definition
-        for (int ypos = 150; ypos > 30; ypos -= 30) {
-            for (int xpos = -150; xpos < 170; xpos += 50) {
-                BodyDef tileDef = new BodyDef();
-                tileDef.type = BodyDef.BodyType.StaticBody;
-                tileDef.position.set(xpos, ypos);
-
-                // Tile shape
-                PolygonShape tileShape = new PolygonShape();
-                tileShape.setAsBox(20, 10);
-
-                // Tile fixture def
-                FixtureDef tileFixtureDef = new FixtureDef();
-                tileFixtureDef.shape = tileShape;
-
-                // Tile body
-                Body tile = world.createBody(tileDef);
-                tile.createFixture(tileFixtureDef);
-
-            }
-        }
-
-        // Create bodies
-        pad = world.createBody(padDef);
-        pad.createFixture(padFixtureDef); // Pad
-
-        ball = world.createBody(ballDef);
-        ball.createFixture(ballFixtureDef); // Ball
-
-        walls = world.createBody(wallsDef);
-        walls.createFixture(wallsFixtureDef); // Walls
-
-        ballShape.dispose();
-        wallsShape.dispose();
-        padShape.dispose();
 
     }
 
@@ -169,7 +98,7 @@ public class BreakoutGameClass extends Game {
             public boolean keyDown(int keyCode) {
                 switch (keyCode) {
                     case Input.Keys.ESCAPE:
-                        ((Game) Gdx.app.getApplicationListener()).setScreen(new MainMenu());
+                        Gdx.app.exit();
                         break;
                     case Input.Keys.SPACE:
                         if (!gameStarted) {
@@ -240,14 +169,12 @@ public class BreakoutGameClass extends Game {
                 if (!contactedBodyA.equals(ball) && !contactedBodyA.equals(pad) && !contactedBodyA.equals(walls)) {
                     world.destroyBody(contactedBodyA);
                     score += 20 + Math.floor(Math.random() * 10);
-                    System.out.println("this");
                     ball.setLinearVelocity(ball.getLinearVelocity().x * 2.5f, ball.getLinearVelocity().y * 2.5f);
                 }
                 Body contactedBodyB = contact.getFixtureB().getBody();
                 if (!contactedBodyB.equals(ball) && !contactedBodyB.equals(pad) && !contactedBodyB.equals(walls)) {
                     world.destroyBody(contactedBodyB);
                     score += 20 + Math.floor(Math.random() * 10);
-                    System.out.println("that");
                     ball.setLinearVelocity(ball.getLinearVelocity().x * 2.5f, ball.getLinearVelocity().y * 2.5f);
                 }
             }
@@ -264,6 +191,13 @@ public class BreakoutGameClass extends Game {
                 for (Body body : bodies) {
                     world.destroyBody(body);
                 }
+
+                // Make everything initial
+                ball.getPosition().set(BALL_INITIAL_POSITION);
+                ball.setLinearVelocity(0,0);
+                pad.getPosition().set(PAD_INITIAL_POSITION);
+                pad.setLinearVelocity(0,0);
+
                 this.create();
             }
         }
@@ -287,5 +221,98 @@ public class BreakoutGameClass extends Game {
     @Override
     public void resume() {
         super.resume();
+    }
+
+    private void addBall() {
+        // Ball definition
+        BodyDef ballDef = new BodyDef();
+        ballDef.type = BodyDef.BodyType.DynamicBody;
+        ballDef.position.set(BALL_INITIAL_POSITION);
+
+        // Ball shape
+        CircleShape ballShape = new CircleShape();
+        ballShape.setRadius(5f);
+
+        // Ball Fixture definition
+        FixtureDef ballFixtureDef = new FixtureDef();
+        ballFixtureDef.shape = ballShape;
+        ballFixtureDef.density = 2; // 2.5 kg in 1 m^2
+        ballFixtureDef.friction = 0; // 0 = slides like a mofo, 1 = doesn't slide
+        ballFixtureDef.restitution = 1; // not losing velocity when falling down
+
+        ball = world.createBody(ballDef);
+        ball.createFixture(ballFixtureDef); // Ball
+
+        ballShape.dispose();
+    }
+
+    private void addPad() {
+        // Pad definition
+        BodyDef padDef = new BodyDef();
+        padDef.type = BodyDef.BodyType.DynamicBody;
+        padDef.position.set(PAD_INITIAL_POSITION);
+
+        // Pad shape
+        PolygonShape padShape = new PolygonShape();
+        padShape.setAsBox(55, 7);
+
+        // Pad fixture def
+        FixtureDef padFixtureDef = new FixtureDef();
+        padFixtureDef.shape = padShape;
+        padFixtureDef.friction = 0;
+        padFixtureDef.restitution = 0;
+
+        pad = world.createBody(padDef);
+        pad.createFixture(padFixtureDef); // Pad
+
+        padShape.dispose();
+    }
+
+    private void addWalls() {
+        // Walls definition
+        BodyDef wallsDef = new BodyDef();
+        wallsDef.type = BodyDef.BodyType.StaticBody;
+        wallsDef.position.set(0, 0);
+
+        // Walls shape
+        ChainShape wallsShape = new ChainShape();
+        wallsShape.createChain(new Vector2[]{new Vector2(-200, -200),
+                new Vector2(-200, 200),
+                new Vector2(200, 200),
+                new Vector2(200, -200),
+                new Vector2(-200, -200)});
+
+        // Walls fixture def
+        FixtureDef wallsFixtureDef = new FixtureDef();
+        wallsFixtureDef.shape = wallsShape;
+        wallsFixtureDef.friction = 1;
+
+        walls = world.createBody(wallsDef);
+        walls.createFixture(wallsFixtureDef); // Walls
+
+        wallsShape.dispose();
+    }
+
+    private void addTiles() {
+        for (int ypos = 150; ypos > 30; ypos -= 30) {
+            for (int xpos = -150; xpos < 170; xpos += 50) {
+                BodyDef tileDef = new BodyDef();
+                tileDef.type = BodyDef.BodyType.StaticBody;
+                tileDef.position.set(xpos, ypos);
+
+                // Tile shape
+                PolygonShape tileShape = new PolygonShape();
+                tileShape.setAsBox(20, 10);
+
+                // Tile fixture def
+                FixtureDef tileFixtureDef = new FixtureDef();
+                tileFixtureDef.shape = tileShape;
+
+                // Tile body
+                Body tile = world.createBody(tileDef);
+                tile.createFixture(tileFixtureDef);
+
+            }
+        }
     }
 }
