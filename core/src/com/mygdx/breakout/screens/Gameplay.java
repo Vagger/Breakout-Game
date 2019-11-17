@@ -10,8 +10,11 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.breakout.controllers.InputController;
+import com.mygdx.breakout.enums.Level;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +34,8 @@ public class Gameplay implements Screen {
     private boolean gamePaused;
 
     private float padSpeed = 500;
-    private float ballSpeed = 50;
+    private float ballSpeed = 999;
+    private float BALL_INITIAL_MASS = 200;
 
     private final Vector2 BALL_INITIAL_POSITION = new Vector2(0, -187);
     private final Vector2 PAD_INITIAL_POSITION = new Vector2(0, -195);
@@ -40,6 +44,11 @@ public class Gameplay implements Screen {
     private Body ball;
     private List<Body> tiles = new ArrayList<>();
     private Body walls;
+
+    private Level scoreStatus;
+    private String levelString;
+
+    Stage stage;
 
     private static final float TIMESTEP = 1 / 60f; // frames per second
     private static final int VELOCITYITERATIONS = 8, POSITIONITERATION = 3; // Common values
@@ -70,6 +79,7 @@ public class Gameplay implements Screen {
                     case Input.Keys.SPACE:
                         if (!gameStarted) {
                             ball.setLinearVelocity(ballSpeed, ballSpeed);
+                            scoreStatus = Level.REALLY_SLOW_TURTLE;
                             gameStarted = true;
                             break;
                         }
@@ -187,18 +197,6 @@ public class Gameplay implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-
-        MassData ballMass = new MassData();
-        ballMass.mass = 2;
-        ball.setMassData(ballMass);
-
-//        world.getBodies(bodies);
-//        for (Body body : bodies) {
-//            if (body.isAwake() && !body.equals(ball) && !body.equals(walls) && !body.equals(pad)) {
-//                world.destroyBody(body);
-//            }
-//        }
-
         world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERATION);
 
         Array<Contact> intersectedBodies;
@@ -207,12 +205,10 @@ public class Gameplay implements Screen {
             for (Contact contact : intersectedBodies) {
                 Body contactedBodyA = contact.getFixtureA().getBody();
                 if (!contactedBodyA.equals(ball) && !contactedBodyA.equals(pad) && !contactedBodyA.equals(walls)){
-                    ball.setLinearVelocity(-ballSpeed, -ballSpeed);
                     world.destroyBody(contactedBodyA);
                 }
                 Body contactedBodyB = contact.getFixtureB().getBody();
                 if (!contactedBodyB.equals(ball) && !contactedBodyB.equals(pad) && !contactedBodyB.equals(walls)){
-                    ball.setLinearVelocity(-ballSpeed, -ballSpeed);
                     world.destroyBody(contactedBodyB);
                 }
             }
