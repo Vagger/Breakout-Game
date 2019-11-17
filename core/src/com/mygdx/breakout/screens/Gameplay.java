@@ -27,11 +27,13 @@ public class Gameplay implements Screen {
 
     private Array<Body> bodies = new Array<>();
 
-    private boolean gameStarted = false;
-    private float padSpeed = 500;
-    private float ballSpeed = 50000;
+    private boolean gameStarted;
+    private boolean gamePaused;
 
-    private final Vector2 BALL_INITIAL_POSITION = new Vector2(0, -190);
+    private float padSpeed = 500;
+    private float ballSpeed = 50;
+
+    private final Vector2 BALL_INITIAL_POSITION = new Vector2(0, -187);
     private final Vector2 PAD_INITIAL_POSITION = new Vector2(0, -195);
 
     private Body pad;
@@ -54,6 +56,9 @@ public class Gameplay implements Screen {
         // Batch
         batch = new SpriteBatch();
 
+        gameStarted = false;
+        gamePaused = false;
+
         // INPUT PROCESSOR
         Gdx.input.setInputProcessor(new InputController() {
             @Override
@@ -63,7 +68,11 @@ public class Gameplay implements Screen {
                         ((Game) Gdx.app.getApplicationListener()).setScreen(new MainMenu());
                         break;
                     case Input.Keys.SPACE:
-                        ball.setLinearVelocity(ballSpeed, ballSpeed);
+                        if (!gameStarted) {
+                            ball.setLinearVelocity(ballSpeed, ballSpeed);
+                            gameStarted = true;
+                            break;
+                        }
                     case Input.Keys.LEFT:
                         pad.setLinearVelocity(-padSpeed, 0);
                         break;
@@ -178,9 +187,19 @@ public class Gameplay implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERATION);
 
-        System.out.println(world.getContactCount());
+        MassData ballMass = new MassData();
+        ballMass.mass = 2;
+        ball.setMassData(ballMass);
+
+//        world.getBodies(bodies);
+//        for (Body body : bodies) {
+//            if (body.isAwake() && !body.equals(ball) && !body.equals(walls) && !body.equals(pad)) {
+//                world.destroyBody(body);
+//            }
+//        }
+
+        world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERATION);
 
         Array<Contact> intersectedBodies;
         if (world.getContactCount() > 1) {
@@ -188,22 +207,14 @@ public class Gameplay implements Screen {
             for (Contact contact : intersectedBodies) {
                 Body contactedBodyA = contact.getFixtureA().getBody();
                 if (!contactedBodyA.equals(ball) && !contactedBodyA.equals(pad) && !contactedBodyA.equals(walls)){
+                    ball.setLinearVelocity(-ballSpeed, -ballSpeed);
                     world.destroyBody(contactedBodyA);
                 }
                 Body contactedBodyB = contact.getFixtureB().getBody();
                 if (!contactedBodyB.equals(ball) && !contactedBodyB.equals(pad) && !contactedBodyB.equals(walls)){
+                    ball.setLinearVelocity(-ballSpeed, -ballSpeed);
                     world.destroyBody(contactedBodyB);
                 }
-            }
-        }
-
-        world.getBodies(bodies);
-
-        // BALL HITS THE TILE
-        for (Body body : bodies) {
-            if (!body.equals(ball) && !body.equals(pad) && !body.equals(walls)) {
-//                System.out.println("Tile position " + body.getPosition().x + " " + body.getPosition().y);
-//                intersected(ball, body);
             }
         }
 
@@ -219,22 +230,6 @@ public class Gameplay implements Screen {
         }
 
         debugRenderer.render(world, camera.combined);
-    }
-
-    private void intersected(Body ball, Body tile) {
-
-        float xdiff = ball.getPosition().x - tile.getPosition().x;
-        xdiff = Math.abs(xdiff);
-        float ydiff = ball.getPosition().y - tile.getPosition().y;
-        ydiff = Math.abs(ydiff);
-
-        if (xdiff > -1 && xdiff < 1 && ydiff > -21 && ydiff < 21) {
-            world.destroyBody(tile);
-        }
-
-        if (xdiff > -41 && xdiff < 41 && ydiff > -1 && ydiff < 1) {
-            world.destroyBody(tile);
-        }
     }
 
     @Override
