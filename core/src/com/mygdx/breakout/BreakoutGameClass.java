@@ -3,6 +3,8 @@ package com.mygdx.breakout;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -11,6 +13,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.breakout.controllers.InputController;
+
+import static java.lang.Math.abs;
 
 public class BreakoutGameClass extends Game {
     public static String TITLE = "Breakout";
@@ -39,7 +43,7 @@ public class BreakoutGameClass extends Game {
     private Body ball;
     private Body walls;
 
-    private Body tileToDestroy = null;
+    Sound tick;
 
     private static final float TIMESTEP = 1 / 60f; // frames per second
     private static final int VELOCITYITERATIONS = 8, POSITIONITERATION = 3; // Common values
@@ -58,6 +62,9 @@ public class BreakoutGameClass extends Game {
         // Camera
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()); // 1:1 ratio
 
+        // Sounds
+        tick = Gdx.audio.newSound(Gdx.files.internal("sounds/tick.mp3"));
+
         // Batch
         batch = new SpriteBatch();
 
@@ -70,6 +77,7 @@ public class BreakoutGameClass extends Game {
         addWalls();
 
         addTiles();
+
     }
 
     @Override
@@ -86,11 +94,7 @@ public class BreakoutGameClass extends Game {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         System.out.println(ball.getLinearVelocity());
-
-//        if (tileToDestroy != null) {
-//            world.destroyBody(tileToDestroy);
-//            tileToDestroy = null;
-//        }
+        ball.setLinearVelocity(ball.getLinearVelocity().x * 1.1f, ball.getLinearVelocity().y * 1.1f);
 
         // INPUT PROCESSOR
         Gdx.input.setInputProcessor(new InputController() {
@@ -168,18 +172,26 @@ public class BreakoutGameClass extends Game {
             for (Contact contact : intersectedBodies) {
                 if (contact.isTouching()) {
                     Body contactedBodyA = contact.getFixtureA().getBody();
+                    Body contactedBodyB = contact.getFixtureB().getBody();
+
+                    // Ball hits tile
                     if (!contactedBodyA.equals(ball) && !contactedBodyA.equals(pad) && !contactedBodyA.equals(walls)) {
-                        tileToDestroy = contactedBodyA;
                         score += 20 + Math.floor(Math.random() * 10);
                         ball.setLinearVelocity(ball.getLinearVelocity().x * 2.5f, ball.getLinearVelocity().y * 2.5f);
                         world.destroyBody(contactedBodyA);
+                        tick.play();
                     }
-                    Body contactedBodyB = contact.getFixtureB().getBody();
                     if (!contactedBodyB.equals(ball) && !contactedBodyB.equals(pad) && !contactedBodyB.equals(walls)) {
-                        tileToDestroy = contactedBodyB;
                         score += 20 + Math.floor(Math.random() * 10);
                         ball.setLinearVelocity(ball.getLinearVelocity().x * 2.5f, ball.getLinearVelocity().y * 2.5f);
                         world.destroyBody(contactedBodyB);
+                        tick.play();
+                    }
+
+                    // Ball hits pad
+                    if (contactedBodyA.equals(ball) && contactedBodyB.equals(pad)
+                            || contactedBodyA.equals(pad) && contactedBodyB.equals(ball)) {
+                        ball.setLinearVelocity(ball.getLinearVelocity().x, abs(ball.getLinearVelocity().y));
                     }
                 }
             }
