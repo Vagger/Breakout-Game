@@ -39,6 +39,8 @@ public class BreakoutGameClass extends Game {
     private Body ball;
     private Body walls;
 
+    private Body tileToDestroy = null;
+
     private static final float TIMESTEP = 1 / 60f; // frames per second
     private static final int VELOCITYITERATIONS = 8, POSITIONITERATION = 3; // Common values
 
@@ -83,6 +85,13 @@ public class BreakoutGameClass extends Game {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        System.out.println(ball.getLinearVelocity());
+
+//        if (tileToDestroy != null) {
+//            world.destroyBody(tileToDestroy);
+//            tileToDestroy = null;
+//        }
+
         // INPUT PROCESSOR
         Gdx.input.setInputProcessor(new InputController() {
             @Override
@@ -123,6 +132,7 @@ public class BreakoutGameClass extends Game {
         world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERATION);
 
         batch.begin();
+
         // HOW TO PLAY
         font.setColor(1, 1, 1, 1); //white
         font.draw(batch, controlsText, 220, 30);
@@ -153,44 +163,49 @@ public class BreakoutGameClass extends Game {
         }
 
         Array<Contact> intersectedBodies;
+        intersectedBodies = world.getContactList();
         if (world.getContactCount() > 1) {
-            intersectedBodies = world.getContactList();
             for (Contact contact : intersectedBodies) {
-                Body contactedBodyA = contact.getFixtureA().getBody();
-                if (!contactedBodyA.equals(ball) && !contactedBodyA.equals(pad) && !contactedBodyA.equals(walls)) {
-                    world.destroyBody(contactedBodyA);
-                    score += 20 + Math.floor(Math.random() * 10);
-                    ball.setLinearVelocity(ball.getLinearVelocity().x * 2.5f, ball.getLinearVelocity().y * 2.5f);
-                }
-                Body contactedBodyB = contact.getFixtureB().getBody();
-                if (!contactedBodyB.equals(ball) && !contactedBodyB.equals(pad) && !contactedBodyB.equals(walls)) {
-                    world.destroyBody(contactedBodyB);
-                    score += 20 + Math.floor(Math.random() * 10);
-                    ball.setLinearVelocity(ball.getLinearVelocity().x * 2.5f, ball.getLinearVelocity().y * 2.5f);
+                if (contact.isTouching()) {
+                    Body contactedBodyA = contact.getFixtureA().getBody();
+                    if (!contactedBodyA.equals(ball) && !contactedBodyA.equals(pad) && !contactedBodyA.equals(walls)) {
+                        tileToDestroy = contactedBodyA;
+                        score += 20 + Math.floor(Math.random() * 10);
+                        ball.setLinearVelocity(ball.getLinearVelocity().x * 2.5f, ball.getLinearVelocity().y * 2.5f);
+                        world.destroyBody(contactedBodyA);
+                    }
+                    Body contactedBodyB = contact.getFixtureB().getBody();
+                    if (!contactedBodyB.equals(ball) && !contactedBodyB.equals(pad) && !contactedBodyB.equals(walls)) {
+                        tileToDestroy = contactedBodyB;
+                        score += 20 + Math.floor(Math.random() * 10);
+                        ball.setLinearVelocity(ball.getLinearVelocity().x * 2.5f, ball.getLinearVelocity().y * 2.5f);
+                        world.destroyBody(contactedBodyB);
+                    }
                 }
             }
 
-            if (gameOver) {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                gameStarted = false;
-                Array<Body> bodies = new Array<>();
-                world.getBodies(bodies);
-                for (Body body : bodies) {
-                    world.destroyBody(body);
-                }
+        }
 
-                // Make everything initial
-                ball.getPosition().set(BALL_INITIAL_POSITION);
-                ball.setLinearVelocity(0,0);
-                pad.getPosition().set(PAD_INITIAL_POSITION);
-                pad.setLinearVelocity(0,0);
-
-                this.create();
+        if (gameOver) {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            gameStarted = false;
+            Array<Body> bodies = new Array<>();
+            world.getBodies(bodies);
+            for (Body body : bodies) {
+                world.destroyBody(body);
+            }
+
+            // Make everything initial
+            ball.getPosition().set(BALL_INITIAL_POSITION);
+            ball.setLinearVelocity(0, 0);
+            pad.getPosition().set(PAD_INITIAL_POSITION);
+            pad.setLinearVelocity(0, 0);
+
+            this.create();
         }
 
         debugRenderer.render(world, camera.combined);
@@ -223,6 +238,8 @@ public class BreakoutGameClass extends Game {
         // Ball shape
         CircleShape ballShape = new CircleShape();
         ballShape.setRadius(5f);
+//        PolygonShape ballShape = new PolygonShape();
+//        ballShape.setAsBox(5, 5);
 
         // Ball Fixture definition
         FixtureDef ballFixtureDef = new FixtureDef();
@@ -294,6 +311,14 @@ public class BreakoutGameClass extends Game {
                 // Tile shape
                 PolygonShape tileShape = new PolygonShape();
                 tileShape.setAsBox(20, 10);
+
+//                tileDef.position.set(0, 0);
+//                ChainShape tileShape = new ChainShape();
+//                tileShape.createChain(new Vector2[]{new Vector2(xpos-20, ypos+10),
+//                        new Vector2(xpos-20, ypos-10),
+//                        new Vector2(xpos+20, ypos-10),
+//                        new Vector2(xpos+20, ypos+10),
+//                        new Vector2(xpos-20, ypos+10)});
 
                 // Tile fixture def
                 FixtureDef tileFixtureDef = new FixtureDef();
