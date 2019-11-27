@@ -35,7 +35,7 @@ public class BreakoutGameClass extends Game {
     private float padSpeed = 500;
     private float ballSpeed = 999;
 
-    private final Vector2 BALL_INITIAL_POSITION = new Vector2(0, -187);
+    private final Vector2 BALL_INITIAL_POSITION = new Vector2(0, -185);
     private final Vector2 PAD_INITIAL_POSITION = new Vector2(0, -195);
 
     private Body pad;
@@ -88,9 +88,13 @@ public class BreakoutGameClass extends Game {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-//        System.out.println(ball.getLinearVelocity());
-        System.out.println(ball.getPosition());
-        ball.setLinearVelocity(ball.getLinearVelocity().x * 1.1f, ball.getLinearVelocity().y * 1.1f);
+//        System.out.println(ball.getPosition());
+//        System.out.println(world.getBodyCount());
+        System.out.println(ball.getLinearVelocity());
+
+        // The less the tiles, the faster the ball
+        ball.setLinearVelocity(ball.getLinearVelocity().x * 50 / world.getBodyCount(),
+                ball.getLinearVelocity().y * 50 / world.getBodyCount());
 
         // INPUT PROCESSOR
         Gdx.input.setInputProcessor(new InputController() {
@@ -137,14 +141,6 @@ public class BreakoutGameClass extends Game {
         font.setColor(1, 1, 1, 1); //white
         font.draw(batch, controlsText, 220, 30);
 
-        // YOU LOST
-//        if (ball.getPosition().y < BALL_INITIAL_POSITION.y) {
-//            scoreText = "Game Over";
-//            font.setColor(1, 0, 0, 1); //red
-//            font.draw(batch, scoreText, 40, 420);
-//            font.draw(batch, "You scored " + score, 15, 400);
-//            gameOver = true;
-//        }
         // YOU WON
         if (world.getBodyCount() == 3) { // Only ball, pad and walls
             scoreText = "You Won!";
@@ -180,6 +176,30 @@ public class BreakoutGameClass extends Game {
                     if (contactedBodyA.equals(ball) && contactedBodyB.equals(pad)
                             || contactedBodyA.equals(pad) && contactedBodyB.equals(ball)) {
                         ball.setLinearVelocity(ball.getLinearVelocity().x, abs(ball.getLinearVelocity().y));
+
+//                        System.out.print(ball.getPosition().x);
+//                        System.out.println(" " + pad.getPosition().x);
+
+                        // Almost on the left edge, bounce more left
+                        if (pad.getPosition().x - ball.getPosition().x > 20) {
+                            ball.setLinearVelocity(ball.getLinearVelocity().x - 10, abs(ball.getLinearVelocity().y));
+                        }
+                        // In the left center, bounce more centrally
+                        if (pad.getPosition().x - ball.getPosition().x > 10
+                                && pad.getPosition().x - ball.getPosition().x < 20) {
+                            ball.setLinearVelocity(ball.getLinearVelocity().x, abs(ball.getLinearVelocity().y + 20));
+                        }
+                        // In the right center, bounce more centrally
+                        if (pad.getPosition().x - ball.getPosition().x < -10
+                                && pad.getPosition().x - ball.getPosition().x > -20) {
+                            ball.setLinearVelocity(ball.getLinearVelocity().x, abs(ball.getLinearVelocity().y + 20));
+                        }
+                        // Almost on the right edge, bounce more right
+                        if (pad.getPosition().x - ball.getPosition().x < -20) {
+                            ball.setLinearVelocity(ball.getLinearVelocity().x + 10, abs(ball.getLinearVelocity().y));
+                        }
+
+
                     }
 
                     // Ball hits floor
@@ -277,7 +297,7 @@ public class BreakoutGameClass extends Game {
 
         // Pad shape
         PolygonShape padShape = new PolygonShape();
-        padShape.setAsBox(55, 7);
+        padShape.setAsBox(55, 5);
 
         // Pad fixture def
         FixtureDef padFixtureDef = new FixtureDef();
