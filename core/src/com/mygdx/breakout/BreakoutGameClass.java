@@ -18,7 +18,7 @@ import static java.lang.Math.abs;
 
 public class BreakoutGameClass extends Game {
     public static String TITLE = "Breakout";
-    public static String VERSION = "1.0.1";
+    public static String VERSION = "1.1.1";
 
     private World world;
     private Box2DDebugRenderer debugRenderer;
