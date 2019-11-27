@@ -4,7 +4,6 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -43,7 +42,7 @@ public class BreakoutGameClass extends Game {
     private Body ball;
     private Body walls;
 
-    Sound tick;
+    private Sound tick;
 
     private static final float TIMESTEP = 1 / 60f; // frames per second
     private static final int VELOCITYITERATIONS = 8, POSITIONITERATION = 3; // Common values
@@ -71,13 +70,9 @@ public class BreakoutGameClass extends Game {
         gameStarted = false;
 
         addPad();
-
         addBall();
-
         addWalls();
-
         addTiles();
-
     }
 
     @Override
@@ -93,7 +88,8 @@ public class BreakoutGameClass extends Game {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        System.out.println(ball.getLinearVelocity());
+//        System.out.println(ball.getLinearVelocity());
+        System.out.println(ball.getPosition());
         ball.setLinearVelocity(ball.getLinearVelocity().x * 1.1f, ball.getLinearVelocity().y * 1.1f);
 
         // INPUT PROCESSOR
@@ -142,28 +138,20 @@ public class BreakoutGameClass extends Game {
         font.draw(batch, controlsText, 220, 30);
 
         // YOU LOST
-        if (ball.getPosition().y < BALL_INITIAL_POSITION.y) {
-            scoreText = "Game Over";
-            font.setColor(1, 0, 0, 1); //red
-            font.draw(batch, scoreText, 40, 420);
-            font.draw(batch, "You scored " + score, 15, 400);
-            batch.end();
-            gameOver = true;
-        }
+//        if (ball.getPosition().y < BALL_INITIAL_POSITION.y) {
+//            scoreText = "Game Over";
+//            font.setColor(1, 0, 0, 1); //red
+//            font.draw(batch, scoreText, 40, 420);
+//            font.draw(batch, "You scored " + score, 15, 400);
+//            gameOver = true;
+//        }
         // YOU WON
-        else if (world.getBodyCount() == 3) { // Only ball, pad and walls
+        if (world.getBodyCount() == 3) { // Only ball, pad and walls
             scoreText = "You Won!";
             font.setColor(0, 1, 0, 1); //green
             font.draw(batch, scoreText, 40, 420);
             font.draw(batch, "You scored " + score, 15, 400);
-            batch.end();
             gameOver = true;
-        }
-        // The game continues
-        else {
-            font.setColor(1, 1, 1, 1); //white
-            font.draw(batch, scoreText + score, 40, 420);
-            batch.end();
         }
 
         Array<Contact> intersectedBodies;
@@ -193,14 +181,31 @@ public class BreakoutGameClass extends Game {
                             || contactedBodyA.equals(pad) && contactedBodyB.equals(ball)) {
                         ball.setLinearVelocity(ball.getLinearVelocity().x, abs(ball.getLinearVelocity().y));
                     }
+
+                    // Ball hits floor
+                    if (contactedBodyA.equals(ball) && contactedBodyB.equals(walls) && ball.getPosition().y < -193
+                            || contactedBodyA.equals(walls) && contactedBodyB.equals(ball) && ball.getPosition().y < -193) {
+                        scoreText = "Game Over";
+                        font.setColor(1, 0, 0, 1); //red
+                        font.draw(batch, scoreText, 40, 420);
+                        font.draw(batch, "You scored " + score, 15, 400);
+                        gameOver = true;
+                    }
                 }
             }
 
         }
 
+        if (!gameOver) {
+            font.setColor(1, 1, 1, 1); //white
+            font.draw(batch, scoreText + score, 40, 420);
+        }
+
+        batch.end();
+
         if (gameOver) {
             try {
-                Thread.sleep(3000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -250,8 +255,6 @@ public class BreakoutGameClass extends Game {
         // Ball shape
         CircleShape ballShape = new CircleShape();
         ballShape.setRadius(5f);
-//        PolygonShape ballShape = new PolygonShape();
-//        ballShape.setAsBox(5, 5);
 
         // Ball Fixture definition
         FixtureDef ballFixtureDef = new FixtureDef();
@@ -323,14 +326,6 @@ public class BreakoutGameClass extends Game {
                 // Tile shape
                 PolygonShape tileShape = new PolygonShape();
                 tileShape.setAsBox(20, 10);
-
-//                tileDef.position.set(0, 0);
-//                ChainShape tileShape = new ChainShape();
-//                tileShape.createChain(new Vector2[]{new Vector2(xpos-20, ypos+10),
-//                        new Vector2(xpos-20, ypos-10),
-//                        new Vector2(xpos+20, ypos-10),
-//                        new Vector2(xpos+20, ypos+10),
-//                        new Vector2(xpos-20, ypos+10)});
 
                 // Tile fixture def
                 FixtureDef tileFixtureDef = new FixtureDef();
