@@ -3,6 +3,7 @@ package com.mygdx.breakout;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -43,6 +44,7 @@ public class BreakoutGameClass extends Game {
     private Body walls;
 
     private Sound tick;
+    private Music backgroundMusic;
 
     private static final float TIMESTEP = 1 / 60f; // frames per second
     private static final int VELOCITYITERATIONS = 8, POSITIONITERATION = 3; // Common values
@@ -63,6 +65,8 @@ public class BreakoutGameClass extends Game {
 
         // Sounds
         tick = Gdx.audio.newSound(Gdx.files.internal("sounds/tick.mp3"));
+        backgroundMusic = new BackgroundMusic().generateInterstellar();
+        backgroundMusic.setLooping(true);
 
         // Batch
         batch = new SpriteBatch();
@@ -88,10 +92,6 @@ public class BreakoutGameClass extends Game {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-//        System.out.println(ball.getPosition());
-//        System.out.println(world.getBodyCount());
-        System.out.println(ball.getLinearVelocity());
-
         // The less the tiles, the faster the ball
         ball.setLinearVelocity(ball.getLinearVelocity().x * 50 / world.getBodyCount(),
                 ball.getLinearVelocity().y * 50 / world.getBodyCount());
@@ -109,6 +109,7 @@ public class BreakoutGameClass extends Game {
                             ball.setLinearVelocity(ballSpeed, ballSpeed);
                             gameStarted = true;
                             controlsText = "Move the pad with left and right arrows";
+                            backgroundMusic.play();
                             break;
                         }
                     case Input.Keys.LEFT:
@@ -210,6 +211,7 @@ public class BreakoutGameClass extends Game {
                         font.draw(batch, scoreText, 40, 420);
                         font.draw(batch, "You scored " + score, 15, 400);
                         gameOver = true;
+                        backgroundMusic.stop();
                     }
                 }
             }
@@ -225,7 +227,7 @@ public class BreakoutGameClass extends Game {
 
         if (gameOver) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
