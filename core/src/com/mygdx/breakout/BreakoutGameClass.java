@@ -96,6 +96,15 @@ public class BreakoutGameClass extends Game {
         ball.setLinearVelocity(ball.getLinearVelocity().x * 50 / world.getBodyCount(),
                 ball.getLinearVelocity().y * 50 / world.getBodyCount());
 
+        if (gameOver) {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Gdx.app.exit();
+        }
+
         // INPUT PROCESSOR
         Gdx.input.setInputProcessor(new InputController() {
             @Override
@@ -183,21 +192,21 @@ public class BreakoutGameClass extends Game {
 
                         // Almost on the left edge, bounce more left
                         if (pad.getPosition().x - ball.getPosition().x > 20) {
-                            ball.setLinearVelocity(ball.getLinearVelocity().x - 10, abs(ball.getLinearVelocity().y));
+                            ball.setLinearVelocity(ball.getLinearVelocity().x - 30, abs(ball.getLinearVelocity().y));
                         }
                         // In the left center, bounce more centrally
                         if (pad.getPosition().x - ball.getPosition().x > 10
                                 && pad.getPosition().x - ball.getPosition().x < 20) {
-                            ball.setLinearVelocity(ball.getLinearVelocity().x, abs(ball.getLinearVelocity().y + 20));
+                            ball.setLinearVelocity(ball.getLinearVelocity().x, abs(ball.getLinearVelocity().y + 40));
                         }
                         // In the right center, bounce more centrally
                         if (pad.getPosition().x - ball.getPosition().x < -10
                                 && pad.getPosition().x - ball.getPosition().x > -20) {
-                            ball.setLinearVelocity(ball.getLinearVelocity().x, abs(ball.getLinearVelocity().y + 20));
+                            ball.setLinearVelocity(ball.getLinearVelocity().x, abs(ball.getLinearVelocity().y + 40));
                         }
                         // Almost on the right edge, bounce more right
                         if (pad.getPosition().x - ball.getPosition().x < -20) {
-                            ball.setLinearVelocity(ball.getLinearVelocity().x + 10, abs(ball.getLinearVelocity().y));
+                            ball.setLinearVelocity(ball.getLinearVelocity().x + 30, abs(ball.getLinearVelocity().y));
                         }
 
 
@@ -224,28 +233,6 @@ public class BreakoutGameClass extends Game {
         }
 
         batch.end();
-
-        if (gameOver) {
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            gameStarted = false;
-            Array<Body> bodies = new Array<>();
-            world.getBodies(bodies);
-            for (Body body : bodies) {
-                world.destroyBody(body);
-            }
-
-            // Make everything initial
-            ball.getPosition().set(BALL_INITIAL_POSITION);
-            ball.setLinearVelocity(0, 0);
-            pad.getPosition().set(PAD_INITIAL_POSITION);
-            pad.setLinearVelocity(0, 0);
-
-            this.create();
-        }
 
         debugRenderer.render(world, camera.combined);
     }
